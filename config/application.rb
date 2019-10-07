@@ -20,5 +20,5 @@ module ConticiniPrivate
           methods: :any)
       end
     end
-
+  end
 end
