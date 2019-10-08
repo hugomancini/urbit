@@ -13,11 +13,8 @@ module ConticiniPrivate
 
    config.middleware.insert_before 0, Rack::Cors do
       allow do
-        origins 'https://thomas-test-theme.myshopify.com/cart', 'https://philippeconticini.fr'
-        resource(
-          '*',
-          headers: :any,
-          methods: :any)
+       origins 'thomas-test-theme.myshopify.com'
+       resource '*', :headers => :any, :methods => [:get, :post, :options]
       end
     end
   end
