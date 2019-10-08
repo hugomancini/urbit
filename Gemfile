@@ -12,7 +12,7 @@ gem 'pg'
 gem 'puma', '~> 3.11'
 
 gem 'rack-cors'
-
+gem 'shopify_api'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5'
 # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker

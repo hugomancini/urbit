@@ -7,6 +7,201 @@ require 'json'
 class PagesController < ApplicationController
   skip_before_action :verify_authenticity_token
 
+  def deliveryValid
+    puts "________ DELIVERY VALID ________"
+    #getting info on wether the area is inside delivery area
+    puts "________ ADDRESS? ________"
+
+    uri = URI.parse("https://sandbox.urb-it.com/v2/address?street=#{URI::encode(params['address'])}&postcode=#{params['postcode']}&city=#{params['city']}")
+    request = Net::HTTP::Get.new(uri)
+    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+    req_options = {
+      use_ssl: uri.scheme == "https",
+    }
+    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+      http.request(request)
+    end
+    puts "________ Response ________"
+    puts answer = response.body
+
+    jsonAnswer = JSON.parse(answer)
+    @answer = jsonAnswer["message"]
+     # if it is, then we get the hash of all delivery slots available
+    if @answer.nil?
+      puts "________ HOURS? ________"
+
+      uri = URI.parse("https://sandbox.urb-it.com/v2/deliveryhours")
+      request = Net::HTTP::Get.new(uri)
+      request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+      req_options = {
+        use_ssl: uri.scheme == "https",
+      }
+      response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+        http.request(request)
+      end
+
+      c_o = CheckOut.find_by({cart_token: params['cart_token'] })
+      if !c_o.nil?
+        c_o.valid_address = jsonAnswer['address']
+
+        c_o.address_1 = params['address']
+        c_o.first_name = params['name'].split(' ')[0]
+        c_o.last_name = params['name'].split(' ').drop(1).join(' ')
+        c_o.city = params['city']
+        c_o.postcode = params['postcode']
+        c_o.phone_number = params['phone']
+
+        c_o.save
+      else
+        CheckOut.create({cart_token: params['cart_token'],valid_address: jsonAnswer['address']})
+      end
+      puts "________ response ________"
+      deliverySlots = response.body
+      jsonDeliverySlots = JSON.parse(deliverySlots)
+      render json: {answer: jsonDeliverySlots}
+    else
+    # if not, then we put an error message
+       render json: {answer: @answer}
+    end
+  end
+
+  def initiateCart
+    puts "________ INITIATE CART ________"
+
+    uri = URI.parse("https://sandbox.urb-it.com/v2/carts")
+    request = Net::HTTP::Post.new(uri)
+    request["Content-Type"] = "application/json"
+    request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
+    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+    request.body = {items: JSON.parse(params['items'].to_s)}.to_json
+    req_options = {
+      use_ssl: uri.scheme == "https",
+    }
+    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+      http.request(request)
+    end
+    response.code
+    puts "________ Response ________"
+    puts answer = response.body
+
+    jsonAnswer = JSON.parse(answer)
+    c_o = CheckOut.find_by({cart_token: params['cart_token']})
+    c_o.fees = jsonAnswer["meta"]['fees'][0]["amount"]
+    tmp_dattim = params['delivery_time'].in_time_zone('Paris')
+    c_o.delivery_time = tmp_dattim.to_json
+    c_o.u_cart_id = jsonAnswer["id"]
+    c_o.save
+
+    initiateCheckOut(c_o)
+    render json: {answer: jsonAnswer}
+  end
+
+  def initiateCheckOut(checkout)
+    puts "________ INITIATE CHECKOUT ________"
+
+    uri = URI.parse("https://sandbox.urb-it.com/v3/checkouts/")
+    request = Net::HTTP::Post.new(uri)
+    request.content_type = "application/json"
+    request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
+    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+    request.body = {cart_reference: checkout.u_cart_id.to_s}.to_json
+    req_options = {
+      use_ssl: uri.scheme == "https",
+    }
+    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+      http.request(request)
+    end
+    puts "________ Response ________"
+    p response.code
+    p answer = response.body
+
+    jsonAnswer = JSON.parse(answer)
+    checkout.u_checkout_id = jsonAnswer["id"]
+    checkout.save
+
+    setDateTimeRecipient(checkout)
+  end
+
+  def setDateTimeRecipient(checkout)
+    puts "____________ setDateTimeRecipient __________"
+    json = {
+      "delivery_time": DateTime.parse(checkout.delivery_time),
+              "message": checkout.message,
+              "recipient": {
+                "first_name": checkout.first_name,
+                "last_name": checkout.last_name,
+                "address_1": checkout.address_1,
+                "address_2": "",
+                "city": checkout.city,
+                "postcode": checkout.postcode,
+                "phone_number": checkout.phone_number,
+                "email": "thomas@omister.com"
+              }
+    }
+    uri = URI.parse("https://sandbox.urb-it.com/v3/checkouts/#{checkout.u_checkout_id}/delivery")
+    request = Net::HTTP::Put.new(uri)
+    request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
+    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+    request.body = json.to_json
+    req_options = {
+      use_ssl: uri.scheme == "https",
+    }
+    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+      http.request(request)
+    end
+    puts "____________ Response ______________"
+    puts response.code
+    answer = response.body
+    puts jsonAnswer = JSON.parse(answer)
+  end
+
+
+###################### [ START ]CARRIER SERVICES [ START ]########################
+
+  def create_carrier_service
+    puts " ____________ CREATE CARRIER SERVICE  ______"
+    connectApi
+    ShopifyAPI::CarrierService.create({
+      "carrier_service": {
+        "name": "Livraison à vélo avec Urbit",
+        "callback_url": "https://077c99fd.ngrok.io/shipping",
+        "service_discovery": true
+      }
+    })
+  end
+
+
+
+  def shipping
+    puts " ____________ SHIPPING  ______"
+
+    c_o = CheckOut.find_by(cart_token: cart_token)
+
+
+    shipping = {
+       "rates": [
+           {
+               "service_name": "Livraison à vélo Urbit",
+               "service_code": "ON",
+               "total_price": c_o.fees,
+               "description": c_o.delivery_time.to_datetime.strftime("Livraison prévue le %d/%m/%Y à %H:%M"),
+               "currency": "EUR",
+               "min_delivery_date": "2013-04-12 14:48:45 -0400",
+               "max_delivery_date": "2013-04-12 14:48:45 -0400"
+           }
+       ]
+    }
+  p json: shipping
+  render json: shipping
+  end
+
+
+###################### [  END  ]CARRIER SERVICES [  END  ] ########################
+
+
+
+
+
 
 
   def deleteOrder(orderID)
@@ -18,24 +213,6 @@ class PagesController < ApplicationController
     req_options = {
       use_ssl: uri.scheme == "https",
     }
-
-    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
-      http.request(request)
-    end
-    response.code
-    answer = response.body
-    jsonAnswer = JSON.parse(answer)
-    end
-
-  def setDateTimeRecipient(checkoutId, json)
-    uri = URI.parse("https://sandbox.urb-it.com/v3/checkouts/#{checkoutId}/delivery")
-    request = Net::HTTP::Put.new(uri)
-    request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
-    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
-    request.body = json
-    req_options = {
-      use_ssl: uri.scheme == "https",
-    }
     response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
       http.request(request)
     end
@@ -43,6 +220,8 @@ class PagesController < ApplicationController
     answer = response.body
     jsonAnswer = JSON.parse(answer)
   end
+
+
 
   def checkout(checkoutId)
     uri = URI.parse("https://sandbox.urb-it.com/v2/checkouts/#{checkoutId}")
@@ -65,127 +244,17 @@ class PagesController < ApplicationController
     render json: {answer: jsonAnswer}
   end
 
-  def initiateCheckOut(cartId)
-    uri = URI.parse("https://sandbox.urb-it.com/v3/checkouts/")
-    request = Net::HTTP::Post.new(uri)
-    request.content_type = "application/json"
-    request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
-    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
-    request.body =
-    req_options = {
-      use_ssl: uri.scheme == "https",
-    }
-    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
-      http.request(request)
-    end
-    response.code
-    answer = response.body
-    jsonAnswer = JSON.parse(answer)
-    @checkoutId =jsonAnswer["id"]
-    checkout(@checkoutId)
+
+  def create_checkout
+
   end
 
-  def initiateCart
-    uri = URI.parse("https://sandbox.urb-it.com/v2/carts")
-    request = Net::HTTP::Post.new(uri)
-    request["Content-Type"] = "application/json"
-    request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
-    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
-    request.body = {items: JSON.parse(params['items'].to_s)}.to_json
-    req_options = {
-      use_ssl: uri.scheme == "https",
-    }
-    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
-      http.request(request)
-    end
-    response.code
-    answer = response.body
-
-    jsonAnswer = JSON.parse(answer)
-    p 'iiiiiii'
-    p jsonAnswer["meta"]["fees"]["amount"]
-    p 'iiiiiii'
-    @cartId = jsonAnswer["id"]
-    render json: {answer: jsonAnswer}
-  end
-
-  def deliveryValid
-    #getting info on wether the area is inside delivery area
-    uri = URI.parse("https://sandbox.urb-it.com/v2/postalcodes/#{params[:postcode]}")
-    request = Net::HTTP::Get.new(uri)
-    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
-    req_options = {
-      use_ssl: uri.scheme == "https",
-    }
-    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
-      http.request(request)
-    end
-     response.code
-     answer = response.body
-     jsonAnswer = JSON.parse(answer)
-     @answer = jsonAnswer["inside_delivery_area"]
-     # if it is, then we get the hash of all delivery slots available
-      if @answer != "no"
-       uri = URI.parse("https://sandbox.urb-it.com/v2/deliveryhours")
-       request = Net::HTTP::Get.new(uri)
-       request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
-       req_options = {
-         use_ssl: uri.scheme == "https",
-       }
-
-       response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
-         http.request(request)
-       end
-       response.code
-       deliverySlots = response.body
-       jsonDeliverySlots = JSON.parse(deliverySlots)
-       render json: {answer: jsonDeliverySlots}
-      else
-    # if not, then we put an error message
-       render json: {answer: @answer}
-      end
-  end
-
-  def shipping
-    p params
-  shipping = {
-     "rates": [
-         {
-             "service_name": "canadapost-overnight",
-             "service_code": "ON",
-             "total_price": "1295",
-             "description": "This is the fastest option by far",
-             "currency": "CAD",
-             "min_delivery_date": "2013-04-12 14:48:45 -0400",
-             "max_delivery_date": "2013-04-12 14:48:45 -0400"
-         },
-         {
-             "service_name": "fedex-2dayground",
-             "service_code": "2D",
-             "total_price": "2934",
-             "currency": "USD",
-             "min_delivery_date": "2013-04-12 14:48:45 -0400",
-             "max_delivery_date": "2013-04-12 14:48:45 -0400"
-         },
-         {
-             "service_name": "fedex-priorityovernight",
-             "service_code": "1D",
-             "total_price": "3587",
-             "currency": "USD",
-             "min_delivery_date": "2013-04-12 14:48:45 -0400",
-             "max_delivery_date": "2013-04-12 14:48:45 -0400"
-         }
-     ]
-  }
-  render json: shipping
-  end
-
-  def connectApi
-    shop_url = "https://5616671f7cf3182a8e046eb9e0705171:5616671f7cf3182a8e046eb9e0705171@thomas-test-theme.myshopify.com"
-    ShopifyAPI::Base.site = shop_url
-    ShopifyAPI::Base.api_version = '2019-07'
-  end
 
   private
 
+  def connectApi
+    shop_url = "https://5616671f7cf3182a8e046eb9e0705171:3d7821e24c16e04f5a65c44971f7c5e1@thomas-test-theme.myshopify.com"
+    ShopifyAPI::Base.site = shop_url
+    ShopifyAPI::Base.api_version = '2019-10'
+  end
 end
