@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_08_160827) do
+ActiveRecord::Schema.define(version: 2019_10_09_081609) do
 
   create_table "check_outs", force: :cascade do |t|
     t.string "cart_token"
@@ -28,6 +28,8 @@ ActiveRecord::Schema.define(version: 2019_10_08_160827) do
     t.string "phone_number"
     t.string "u_cart_id"
     t.string "u_checkout_id"
+    t.string "email"
+    t.string "address_2"
   end
 
 end

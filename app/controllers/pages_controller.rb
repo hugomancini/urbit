@@ -12,7 +12,7 @@ class PagesController < ApplicationController
     #getting info on wether the area is inside delivery area
     puts "________ ADDRESS? ________"
 
-    uri = URI.parse("https://sandbox.urb-it.com/v2/address?street=#{URI::encode(params['address'])}&postcode=#{params['postcode']}&city=#{params['city']}")
+    uri = URI.parse("https://sandbox.urb-it.com/v2/postalcodes/#{params['postcode']}")
     request = Net::HTTP::Get.new(uri)
     request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
     req_options = {
@@ -25,9 +25,9 @@ class PagesController < ApplicationController
     puts answer = response.body
 
     jsonAnswer = JSON.parse(answer)
-    @answer = jsonAnswer["message"]
+    p @answer = jsonAnswer["inside_delivery_area"]
      # if it is, then we get the hash of all delivery slots available
-    if @answer.nil?
+    if @answer == "yes"
       puts "________ HOURS? ________"
 
       uri = URI.parse("https://sandbox.urb-it.com/v2/deliveryhours")
@@ -44,7 +44,10 @@ class PagesController < ApplicationController
       if !c_o.nil?
         c_o.valid_address = jsonAnswer['address']
 
+        c_o.address_2 = params['address_2']
         c_o.address_1 = params['address']
+        c_o.email = params['email']
+        c_o.message = params['message']
         c_o.first_name = params['name'].split(' ')[0]
         c_o.last_name = params['name'].split(' ').drop(1).join(' ')
         c_o.city = params['city']
@@ -61,7 +64,7 @@ class PagesController < ApplicationController
       render json: {answer: jsonDeliverySlots}
     else
     # if not, then we put an error message
-       render json: {answer: @answer}
+       render json: {answer: "no"}
     end
   end
 
@@ -98,7 +101,6 @@ class PagesController < ApplicationController
 
   def initiateCheckOut(checkout)
     puts "________ INITIATE CHECKOUT ________"
-
     uri = URI.parse("https://sandbox.urb-it.com/v3/checkouts/")
     request = Net::HTTP::Post.new(uri)
     request.content_type = "application/json"
@@ -119,11 +121,11 @@ class PagesController < ApplicationController
     checkout.u_checkout_id = jsonAnswer["id"]
     checkout.save
 
-    setDateTimeRecipient(checkout)
   end
 
-  def setDateTimeRecipient(checkout)
+  def setDateTimeRecipient
     puts "____________ setDateTimeRecipient __________"
+    checkout = CheckOut.find_by({cart_token: params['cart_token']})
     json = {
       "delivery_time": DateTime.parse(checkout.delivery_time),
               "message": checkout.message,
@@ -131,11 +133,11 @@ class PagesController < ApplicationController
                 "first_name": checkout.first_name,
                 "last_name": checkout.last_name,
                 "address_1": checkout.address_1,
-                "address_2": "",
+                "address_2": checkout.address_2,
                 "city": checkout.city,
                 "postcode": checkout.postcode,
                 "phone_number": checkout.phone_number,
-                "email": "thomas@omister.com"
+                "email": checkout.email
               }
     }
     uri = URI.parse("https://sandbox.urb-it.com/v3/checkouts/#{checkout.u_checkout_id}/delivery")
@@ -152,7 +154,7 @@ class PagesController < ApplicationController
     puts "____________ Response ______________"
     puts response.code
     answer = response.body
-    puts jsonAnswer = JSON.parse(answer)
+    render json: answer
   end
 
 
@@ -175,6 +177,7 @@ class PagesController < ApplicationController
   def shipping
     puts " ____________ SHIPPING  ______"
 
+    cart_token = params["rate"]["items"][0]["properties"]["urbit_token"]
     c_o = CheckOut.find_by(cart_token: cart_token)
 
 
