@@ -41,23 +41,22 @@ class PagesController < ApplicationController
       end
 
       c_o = CheckOut.find_by({cart_token: params['cart_token'] })
-      if !c_o.nil?
-        c_o.valid_address = jsonAnswer['address']
-
-        c_o.address_2 = params['address_2']
-        c_o.address_1 = params['address']
-        c_o.email = params['email']
-        c_o.message = params['message']
-        c_o.first_name = params['name'].split(' ')[0]
-        c_o.last_name = params['name'].split(' ').drop(1).join(' ')
-        c_o.city = params['city']
-        c_o.postcode = params['postcode']
-        c_o.phone_number = params['phone']
-
-        c_o.save
-      else
-        CheckOut.create({cart_token: params['cart_token'],valid_address: jsonAnswer['address']})
+      if c_o.nil?
+        c_o = CheckOut.new
+        c_o.cart_token = params['cart_token']
       end
+      c_o.valid_address = jsonAnswer['address']
+      c_o.address_2 = params['address_2']
+      c_o.address_1 = params['address']
+      c_o.email = params['email']
+      c_o.message = params['message']
+      c_o.first_name = params['name'].split(' ')[0]
+      c_o.last_name = params['name'].split(' ').drop(1).join(' ')
+      c_o.city = params['city']
+      c_o.postcode = params['postcode']
+      c_o.phone_number = params['phone']
+      c_o.save
+
       puts "________ response ________"
       deliverySlots = response.body
       jsonDeliverySlots = JSON.parse(deliverySlots)
@@ -84,6 +83,7 @@ class PagesController < ApplicationController
       http.request(request)
     end
     response.code
+    puts params
     puts "________ Response ________"
     puts answer = response.body
 
@@ -184,7 +184,7 @@ class PagesController < ApplicationController
     shipping = {
        "rates": [
            {
-               "service_name": "Livraison à vélo Urbit",
+               "service_name": "Livraison à domicile Urbit",
                "service_code": "ON",
                "total_price": c_o.fees,
                "description": c_o.delivery_time.to_datetime.strftime("Livraison prévue le %d/%m/%Y à %H:%M"),
