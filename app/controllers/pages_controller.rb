@@ -69,13 +69,27 @@ class PagesController < ApplicationController
 
   def initiateCart
     puts "________ INITIATE CART ________"
+    items_from_cart = JSON.parse(params['cartJS'])
+    items = []
+    items_from_cart['items'].each do |item|
+      new_item = {
+                    sku: item['sku'],
+                    name: item['title'],
+                    quantity: item['quantity'],
+                    price: item['price'],
+                    vat: 2000
+                  }
+      items << new_item
+    end
+
+    p items[0]
 
     uri = URI.parse("https://sandbox.urb-it.com/v2/carts")
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
     request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
     request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
-    request.body = {items: JSON.parse(params['items'].to_s)}.to_json
+    request.body = {items: items}.to_json
     req_options = {
       use_ssl: uri.scheme == "https",
     }
@@ -83,20 +97,29 @@ class PagesController < ApplicationController
       http.request(request)
     end
     response.code
-    puts params
-    puts "________ Response ________"
-    puts answer = response.body
+    urbit_free = items_from_cart['items_subtotal_price'] > 6000
 
-    jsonAnswer = JSON.parse(answer)
-    c_o = CheckOut.find_by({cart_token: params['cart_token']})
-    c_o.fees = jsonAnswer["meta"]['fees'][0]["amount"]
+    puts "________ Response ________"
+    answer = response.body
+
+    puts jsonAnswer = JSON.parse(answer)
+    c_o = CheckOut.find_by({cart_token: items_from_cart['token']})
+
     tmp_dattim = params['delivery_time'].in_time_zone('Paris')
     c_o.delivery_time = tmp_dattim.to_json
     c_o.u_cart_id = jsonAnswer["id"]
+    c_o.free_urbit = urbit_free
+    c_o.fees = urbit_free ? 0 : jsonAnswer["meta"]['fees'][0]["amount"]
     c_o.save
 
     initiateCheckOut(c_o)
-    render json: {answer: jsonAnswer}
+    if urbit_free
+      jsonAnswer["meta"]['fees'][0]["amount"] = 0
+      render json: {answer: jsonAnswer}
+    else
+      render json: {answer: jsonAnswer}
+    end
+
   end
 
   def initiateCheckOut(checkout)
