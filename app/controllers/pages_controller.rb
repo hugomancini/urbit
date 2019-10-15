@@ -188,8 +188,8 @@ class PagesController < ApplicationController
     connectApi
     ShopifyAPI::CarrierService.create({
       "carrier_service": {
-        "name": "Livraison à vélo avec Urbit",
-        "callback_url": "https://077c99fd.ngrok.io/shipping",
+        "name": "Livraison à domicile avec Urbit",
+        "callback_url": "https://conticini-urbit.herokuapp.com/shipping",
         "service_discovery": true
       }
     })
