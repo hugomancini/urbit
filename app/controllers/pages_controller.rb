@@ -152,12 +152,15 @@ class PagesController < ApplicationController
 
     tmp_dattim = DateTime.parse(params['delivery_time']).in_time_zone('Paris')
     tmp_maxdattim = DateTime.parse(params['max_delivery_time']).in_time_zone('Paris')
-
+    p tmp_maxdattim
+    p '__________________________'
     c_o.delivery_time = tmp_dattim.to_json
     c_o.max_delivery_time = tmp_maxdattim.to_json
     c_o.u_cart_id = jsonAnswer["id"]
     c_o.free_urbit = urbit_free
     c_o.fees = urbit_free ? 0 : jsonAnswer["meta"]['fees'][0]["amount"]
+
+    p c_o.max_delivery_time
     c_o.save
 
     initiateCheckOut(c_o)
@@ -261,10 +264,10 @@ class PagesController < ApplicationController
                "service_name": "Livraison à domicile Urbit",
                "service_code": "ON",
                "total_price": c_o.fees,
-               "description": "Livraison prévue le #{c_o.delivery_time.to_datetime.strftime("%d/%m/%Y, entre %H:%M")} et #{c_o.delivery_time.to_datetime.strftime("%H:%M")} ",
+               "description": "Livraison prévue le #{c_o.delivery_time.to_datetime.strftime("%d/%m/%Y, entre %H:%M")} et #{c_o.max_delivery_time.to_datetime.strftime("%H:%M")} ",
                "currency": "EUR",
-               "min_delivery_date": c_o.delivery_time,
-               "max_delivery_date": c_o.max_delivery_time
+               # "min_delivery_date": c_o.delivery_time,
+               # "max_delivery_date": c_o.max_delivery_time
            }
        ]
     }
