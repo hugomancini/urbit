@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_10_173301) do
+ActiveRecord::Schema.define(version: 2019_10_17_114910) do
 
   create_table "check_outs", force: :cascade do |t|
     t.string "cart_token"
@@ -31,6 +31,7 @@ ActiveRecord::Schema.define(version: 2019_10_10_173301) do
     t.string "email"
     t.string "address_2"
     t.boolean "free_urbit"
+    t.string "max_delivery_time"
   end
 
 end

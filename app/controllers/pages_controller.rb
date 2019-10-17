@@ -151,7 +151,10 @@ class PagesController < ApplicationController
     c_o = CheckOut.find_by({cart_token: items_from_cart['token']})
 
     tmp_dattim = DateTime.parse(params['delivery_time']).in_time_zone('Paris')
+    tmp_maxdattim = DateTime.parse(params['max_delivery_time']).in_time_zone('Paris')
+
     c_o.delivery_time = tmp_dattim.to_json
+    c_o.max_delivery_time = tmp_maxdattim.to_json
     c_o.u_cart_id = jsonAnswer["id"]
     c_o.free_urbit = urbit_free
     c_o.fees = urbit_free ? 0 : jsonAnswer["meta"]['fees'][0]["amount"]
@@ -196,7 +199,8 @@ class PagesController < ApplicationController
     checkout = CheckOut.find_by({cart_token: params['cart_token']})
     p DateTime.parse(checkout.delivery_time)
     json = {
-              "max_delivery_time": DateTime.parse(checkout.delivery_time),
+              "delivery_time": DateTime.parse(checkout.delivery_time),
+              "max_delivery_time": DateTime.parse(checkout.max_delivery_time),
               "message": checkout.message,
               "recipient": {
                 "first_name": checkout.first_name,
@@ -222,6 +226,7 @@ class PagesController < ApplicationController
     end
     puts "____________ Response ______________"
     puts response.code
+    puts response.body
     answer = response.body
     render json: answer
   end
@@ -256,10 +261,10 @@ class PagesController < ApplicationController
                "service_name": "Livraison à domicile Urbit",
                "service_code": "ON",
                "total_price": c_o.fees,
-               "description": c_o.delivery_time.to_datetime.strftime("Livraison prévue le %d/%m/%Y avant %H:%M"),
+               "description": "Livraison prévue le #{c_o.delivery_time.to_datetime.strftime(%d/%m/%Y, entre %H:%M)} et #{c_o.delivery_time.to_datetime.strftime(%H:%M)} ",
                "currency": "EUR",
-               "min_delivery_date": "2013-04-12 14:48:45 -0400",
-               "max_delivery_date": "2013-04-12 14:48:45 -0400"
+               "min_delivery_date": c_o.delivery_time,
+               "max_delivery_date": c_o.max_delivery_time
            }
        ]
     }
