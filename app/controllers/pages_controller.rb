@@ -92,7 +92,7 @@ class PagesController < ApplicationController
       puts "________ response ________"
       deliverySlots = response.body
       jsonDeliverySlots = JSON.parse(deliverySlots)
-            slots_by_day = []
+      slots_by_day = []
 
 
       dates = jsonDeliverySlots['items'].map {|slot| slot['delivery_time'].slice(0,10)}.uniq
@@ -150,7 +150,7 @@ class PagesController < ApplicationController
     puts jsonAnswer = JSON.parse(answer)
     c_o = CheckOut.find_by({cart_token: items_from_cart['token']})
 
-    tmp_dattim = params['delivery_time'].in_time_zone('Paris')
+    tmp_dattim = DateTime.parse(params['delivery_time']).in_time_zone('Paris')
     c_o.delivery_time = tmp_dattim.to_json
     c_o.u_cart_id = jsonAnswer["id"]
     c_o.free_urbit = urbit_free
@@ -195,7 +195,7 @@ class PagesController < ApplicationController
     puts "____________ setDateTimeRecipient __________"
     checkout = CheckOut.find_by({cart_token: params['cart_token']})
     json = {
-      "delivery_time": DateTime.parse(checkout.delivery_time),
+              "max_delivery_time": DateTime.parse(checkout.delivery_time),
               "message": checkout.message,
               "recipient": {
                 "first_name": checkout.first_name,
@@ -255,7 +255,7 @@ class PagesController < ApplicationController
                "service_name": "Livraison à domicile Urbit",
                "service_code": "ON",
                "total_price": c_o.fees,
-               "description": c_o.delivery_time.to_datetime.strftime("Livraison prévue le %d/%m/%Y à %H:%M"),
+               "description": c_o.delivery_time.to_datetime.strftime("Livraison prévue le %d/%m/%Y avant %H:%M"),
                "currency": "EUR",
                "min_delivery_date": "2013-04-12 14:48:45 -0400",
                "max_delivery_date": "2013-04-12 14:48:45 -0400"
