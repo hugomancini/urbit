@@ -194,6 +194,7 @@ class PagesController < ApplicationController
   def setDateTimeRecipient
     puts "____________ setDateTimeRecipient __________"
     checkout = CheckOut.find_by({cart_token: params['cart_token']})
+    p DateTime.parse(checkout.delivery_time)
     json = {
               "max_delivery_time": DateTime.parse(checkout.delivery_time),
               "message": checkout.message,
