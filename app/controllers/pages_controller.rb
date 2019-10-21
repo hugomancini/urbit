@@ -170,7 +170,7 @@ class PagesController < ApplicationController
     jsonAnswer["meta"]['fees'][0]["amount"] = c_o.fees
     render json: {answer: jsonAnswer}
 
-    end
+
 
   end
 
@@ -341,9 +341,7 @@ class PagesController < ApplicationController
   end
 
 
-  def create_checkout
 
-  end
 
 
   private
