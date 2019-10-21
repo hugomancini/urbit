@@ -13,7 +13,7 @@ module ConticiniPrivate
 
    config.middleware.insert_before 0, Rack::Cors do
       allow do
-       origins 'c7f370ab.ngrok.io','thomas-test-theme.myshopify.com', 'philippeconticini.fr', 'urbit-zapiet-test.myshopify.com'
+       origins '7692dd1e.ngrok.io','thomas-test-theme.myshopify.com', 'philippeconticini.fr', 'urbit-zapiet-test.myshopify.com'
        resource '*', :headers => :any, :methods => [:get, :post, :options]
       end
     end

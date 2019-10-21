@@ -2,7 +2,7 @@ if (Shopify.checkout.shipping_rate.title.toLowerCase().includes('urbit')) {
   $.ajax({
       type: "POST",
 
-      url: "https://077c99fd.ngrok.io/urbit_valid",
+      url: "https://7692dd1e.ngrok.io/urbit_valid",
       crossDomain: true,
       headers: {
               "Access-Control-Allow-Origin": "*",
