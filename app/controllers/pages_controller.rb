@@ -158,34 +158,19 @@ class PagesController < ApplicationController
     c_o.max_delivery_time = tmp_maxdattim.to_json
     c_o.u_cart_id = jsonAnswer["id"]
     c_o.free_urbit = urbit_free
-    p c_o.free_urbit
-    c_o.fees = urbit_fees(c_o)
+    c_o.fees = urbit_free ? 0 : jsonAnswer["meta"]['fees'][0]["amount"]
 
     p c_o.max_delivery_time
     c_o.save
 
     initiateCheckOut(c_o)
-
-    jsonAnswer["meta"]['fees'][0]["amount"] = c_o.fees
-    render json: {answer: jsonAnswer}
-
-    end
-
-  end
-
-  def urbit_fees(c_o)
-    zone1 = %w(75001 75002 75003 75004 75005 75006 75007 75008 75009 75010 75011 75012 75013 75014 75015 75016 75017 75018 75019 75020 75116 92100 92110 92120 92130 92170 92200 92240 92300 92320 92600 92800 93100 93170 93210 93260 93300 93310 93400 93500 94000 94140 94160 94200 94220 94250 94270 94300 94300 94410 94700 94800)
-    zone2 = %w(92000 92140 92150 92160 92210 92220 92230 92250 92260 92270 92310 92330 92340 92360 92390 92400 92500 92700 93000 93110 93120 93130 93230 93350 93450 93800 94110 94120 94130 94210 94230 94340 94370 94400)
-    if c_o.free_urbit
-      fees = 0
+    if urbit_free
+      jsonAnswer["meta"]['fees'][0]["amount"] = 0
+      render json: {answer: jsonAnswer}
     else
-      if zone1.include?(c_o.postcode)
-        fees = 1068
-      else
-        fees = 1788
-      end
+      render json: {answer: jsonAnswer}
     end
-    return fees
+
   end
 
   def initiateCheckOut(checkout)
