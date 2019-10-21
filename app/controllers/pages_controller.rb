@@ -280,8 +280,8 @@ class PagesController < ApplicationController
                "service_name": "Livraison à domicile Urbit",
                "service_code": "ON",
                "total_price": c_o.fees,
-               "description": "Livraison prévue le #{c_o.delivery_time.to_datetime.strftime("%d/%m/%Y, entre %H:%M")}  ",
-               "currency": "EUR",
+               "description": "Livraison prévue le #{c_o.delivery_time.to_datetime.strftime("%d/%m/%Y, entre %H:%M")} et #{c_o.max_delivery_time.to_datetime.strftime("%H:%M")} ",
+               "currency": "EUR"
                # "min_delivery_date": c_o.delivery_time,
                # "max_delivery_date": c_o.max_delivery_time
            }
