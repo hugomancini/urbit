@@ -158,17 +158,17 @@ class PagesController < ApplicationController
     c_o.max_delivery_time = tmp_maxdattim.to_json
     c_o.u_cart_id = jsonAnswer["id"]
     c_o.free_urbit = urbit_free
+    p c_o.free_urbit
     c_o.fees = urbit_fees(c_o)
 
     p c_o.max_delivery_time
     c_o.save
 
     initiateCheckOut(c_o)
-    if urbit_free
-      jsonAnswer["meta"]['fees'][0]["amount"] = c_o.fees
-      render json: {answer: jsonAnswer}
-    else
-      render json: {answer: jsonAnswer}
+
+    jsonAnswer["meta"]['fees'][0]["amount"] = c_o.fees
+    render json: {answer: jsonAnswer}
+
     end
 
   end
