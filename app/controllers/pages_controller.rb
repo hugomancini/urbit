@@ -13,6 +13,8 @@ class PagesController < ApplicationController
     puts "________ ADDRESS? ________"
 
     uri = URI.parse("https://sandbox.urb-it.com/v2/postalcodes/#{params['postcode']}")
+    uri = URI.parse("https://sandbox.urb-it.com/v2/postalcodes/75003")
+
     request = Net::HTTP::Get.new(uri)
     request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
     req_options = {
@@ -278,7 +280,7 @@ class PagesController < ApplicationController
                "service_name": "Livraison à domicile Urbit",
                "service_code": "ON",
                "total_price": c_o.fees,
-               "description": "Livraison prévue le #{c_o.delivery_time.to_datetime.strftime("%d/%m/%Y, entre %H:%M")} et #{c_o.max_delivery_time.to_datetime.strftime("%H:%M")} ",
+               "description": "Livraison prévue le #{c_o.delivery_time.to_datetime.strftime("%d/%m/%Y, entre %H:%M")}  ",
                "currency": "EUR",
                # "min_delivery_date": c_o.delivery_time,
                # "max_delivery_date": c_o.max_delivery_time
