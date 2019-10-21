@@ -170,8 +170,6 @@ class PagesController < ApplicationController
     jsonAnswer["meta"]['fees'][0]["amount"] = c_o.fees
     render json: {answer: jsonAnswer}
 
-
-
   end
 
   def urbit_fees(c_o)
