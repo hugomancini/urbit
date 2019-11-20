@@ -12,11 +12,11 @@ class PagesController < ApplicationController
     #getting info on wether the area is inside delivery area
     puts "________ ADDRESS? ________"
 
-    uri = URI.parse("https://sandbox.urb-it.com/v2/postalcodes/#{params['postcode']}")
-    uri = URI.parse("https://sandbox.urb-it.com/v2/postalcodes/75003")
+    uri = URI.parse("https://api.urb-it.com/v2/postalcodes/#{params['postcode']}")
+    uri = URI.parse("https://api.urb-it.com/v2/postalcodes/75003")
 
     request = Net::HTTP::Get.new(uri)
-    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+    request["X-Api-Key"] = "f78cdacc-4bd6-4a5a-940f-aba0c3d413b2"
     req_options = {
       use_ssl: uri.scheme == "https",
     }
@@ -30,9 +30,9 @@ class PagesController < ApplicationController
      # if it is, then we get the hash of all delivery slots available
     if @answer == "yes"
       puts "________ HOURS? ________"
-      # uri = URI.parse("https://sandbox.urb-it.com/v2/deliveryhours")
+      # uri = URI.parse("https://api.urb-it.com/v2/deliveryhours")
       # request = Net::HTTP::Get.new(uri)
-      # request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+      # request["X-Api-Key"] = "f78cdacc-4bd6-4a5a-940f-aba0c3d413b2"
       # req_options = {
       #   use_ssl: uri.scheme == "https",
       # }
@@ -63,9 +63,9 @@ class PagesController < ApplicationController
       # render json: {answer: jsonDeliveryHours}
 
       puts "___________SLOTS__________"
-      uri = URI.parse("https://sandbox.urb-it.com/v2/slots")
+      uri = URI.parse("https://api.urb-it.com/v2/slots")
       request = Net::HTTP::Get.new(uri)
-      request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+      request["X-Api-Key"] = "f78cdacc-4bd6-4a5a-940f-aba0c3d413b2"
       req_options = {
         use_ssl: uri.scheme == "https",
       }
@@ -130,11 +130,11 @@ class PagesController < ApplicationController
 
     p items[0]
 
-    uri = URI.parse("https://sandbox.urb-it.com/v2/carts")
+    uri = URI.parse("https://api.urb-it.com/v2/carts")
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
-    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+    request["Authorization"] = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE4ODYzOTYyMTksIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiaXNzIjoidXJiaXQuY29tIiwicm9sZXMiOlsicmV0YWlsZXIiXSwic3ViIjoiZjc4Y2RhY2MtNGJkNi00YTVhLTk0MGYtYWJhMGMzZDQxM2IyIiwianRpIjoiZDYzZGQ2MWItNzIxNi00ZWY4LTk4ODktMDM1N2E1NDA2MDM4IiwiaWF0IjoxNTcxMDM2MjE5fQ.K_S6pK0AnLxRce515vDsacyfWdDc10za2c6m1E4yzRY"
+    request["X-Api-Key"] = "f78cdacc-4bd6-4a5a-940f-aba0c3d413b2"
     request.body = {items: items}.to_json
     req_options = {
       use_ssl: uri.scheme == "https",
@@ -189,11 +189,11 @@ class PagesController < ApplicationController
 
   def initiateCheckOut(checkout)
     puts "________ INITIATE CHECKOUT ________"
-    uri = URI.parse("https://sandbox.urb-it.com/v3/checkouts/")
+    uri = URI.parse("https://api.urb-it.com/v3/checkouts/")
     request = Net::HTTP::Post.new(uri)
     request.content_type = "application/json"
-    request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
-    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+    request["Authorization"] = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE4ODYzOTYyMTksIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiaXNzIjoidXJiaXQuY29tIiwicm9sZXMiOlsicmV0YWlsZXIiXSwic3ViIjoiZjc4Y2RhY2MtNGJkNi00YTVhLTk0MGYtYWJhMGMzZDQxM2IyIiwianRpIjoiZDYzZGQ2MWItNzIxNi00ZWY4LTk4ODktMDM1N2E1NDA2MDM4IiwiaWF0IjoxNTcxMDM2MjE5fQ.K_S6pK0AnLxRce515vDsacyfWdDc10za2c6m1E4yzRY"
+    request["X-Api-Key"] = "f78cdacc-4bd6-4a5a-940f-aba0c3d413b2"
     request.body = {cart_reference: checkout.u_cart_id.to_s}.to_json
     req_options = {
       use_ssl: uri.scheme == "https",
@@ -230,10 +230,10 @@ class PagesController < ApplicationController
                 "email": checkout.email
               }
     }
-    uri = URI.parse("https://sandbox.urb-it.com/v3/checkouts/#{checkout.u_checkout_id}/delivery")
+    uri = URI.parse("https://api.urb-it.com/v3/checkouts/#{checkout.u_checkout_id}/delivery")
     request = Net::HTTP::Put.new(uri)
-    request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
-    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+    request["Authorization"] = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE4ODYzOTYyMTksIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiaXNzIjoidXJiaXQuY29tIiwicm9sZXMiOlsicmV0YWlsZXIiXSwic3ViIjoiZjc4Y2RhY2MtNGJkNi00YTVhLTk0MGYtYWJhMGMzZDQxM2IyIiwianRpIjoiZDYzZGQ2MWItNzIxNi00ZWY4LTk4ODktMDM1N2E1NDA2MDM4IiwiaWF0IjoxNTcxMDM2MjE5fQ.K_S6pK0AnLxRce515vDsacyfWdDc10za2c6m1E4yzRY"
+    request["X-Api-Key"] = "f78cdacc-4bd6-4a5a-940f-aba0c3d413b2"
     request.body = json.to_json
     req_options = {
       use_ssl: uri.scheme == "https",
@@ -299,7 +299,7 @@ class PagesController < ApplicationController
 
 
   def deleteOrder(orderID)
-    uri = URI.parse("https://sandbox.urb-it.com/v3/checkouts/#{orderID}")
+    uri = URI.parse("https://api.urb-it.com/v3/checkouts/#{orderID}")
     request = Net::HTTP::Delete.new(uri)
     request["Authorization"] = "Bearer <JWT Authorization Header>"
     request["X-Api-Key"] = "<Urb-it API Key>"
@@ -318,10 +318,10 @@ class PagesController < ApplicationController
 
 
   def checkout(checkoutId)
-    uri = URI.parse("https://sandbox.urb-it.com/v2/checkouts/#{checkoutId}")
+    uri = URI.parse("https://api.urb-it.com/v2/checkouts/#{checkoutId}")
     request = Net::HTTP::Get.new(uri)
-    request["Authorization"] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMDE4NzAxNS02MjUxLTQ5NDYtOTJiZC04MDVkNDAxMGVkY2YiLCJpYXQiOjE1NjkzMTI0NzUsInJvbGVzIjpbInJldGFpbGVyIl0sInN1YiI6IjkyMDEyNDE5LWQ3M2EtNDJmNS1hMTJjLWNkY2MyMDc0MGRlMyIsImlzcyI6InVyYml0LmNvbSIsIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiZXhwIjoxODg0NjcyNDc1fQ.P3YVPLgkbjJxD-A5-4-e_Cvx3xDmFDJMJIHB7NS5cos"
-    request["X-Api-Key"] = "92012419-d73a-42f5-a12c-cdcc20740de3"
+    request["Authorization"] = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE4ODYzOTYyMTksIm5hbWUiOiJHXHUwMGUydGVhdXggZCdcdTAwYzltb3Rpb25zIFBhcmlzIiwiaXNzIjoidXJiaXQuY29tIiwicm9sZXMiOlsicmV0YWlsZXIiXSwic3ViIjoiZjc4Y2RhY2MtNGJkNi00YTVhLTk0MGYtYWJhMGMzZDQxM2IyIiwianRpIjoiZDYzZGQ2MWItNzIxNi00ZWY4LTk4ODktMDM1N2E1NDA2MDM4IiwiaWF0IjoxNTcxMDM2MjE5fQ.K_S6pK0AnLxRce515vDsacyfWdDc10za2c6m1E4yzRY"
+    request["X-Api-Key"] = "f78cdacc-4bd6-4a5a-940f-aba0c3d413b2"
 
     req_options = {
       use_ssl: uri.scheme == "https",
