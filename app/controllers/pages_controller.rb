@@ -346,7 +346,7 @@ class PagesController < ApplicationController
 
 
   def connectApi
-    shop_url = "https://5616671f7cf3182a8e046eb9e0705171:3d7821e24c16e04f5a65c44971f7c5e1@thomas-test-theme.myshopify.com"
+    shop_url = "https://8b267c68a80d74f4cd49f6a55e72287e:bde73370a15b66cb5eca4c400a7a8ffa@philippe-conticini.myshopify.com"
     ShopifyAPI::Base.site = shop_url
     ShopifyAPI::Base.api_version = '2019-10'
   end
