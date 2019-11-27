@@ -1,8 +1,9 @@
+
+
 if (Shopify.checkout.shipping_rate.title.toLowerCase().includes('urbit')) {
   $.ajax({
       type: "POST",
-
-      url: "https://7692dd1e.ngrok.io/urbit_valid",
+      url: "https://conticini-urbit.herokuapp.com/urbit_valid",
       crossDomain: true,
       headers: {
               "Access-Control-Allow-Origin": "*",

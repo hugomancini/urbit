@@ -13,7 +13,6 @@ class PagesController < ApplicationController
     puts "________ ADDRESS? ________"
 
     uri = URI.parse("https://api.urb-it.com/v2/postalcodes/#{params['postcode']}")
-    uri = URI.parse("https://api.urb-it.com/v2/postalcodes/75003")
 
     request = Net::HTTP::Get.new(uri)
     request["X-Api-Key"] = "f78cdacc-4bd6-4a5a-940f-aba0c3d413b2"
