@@ -9,7 +9,7 @@ gem 'rails', '~> 6.0.0'
 # gem 'sqlite3'
 gem 'pg'
 # Use Puma as the app server
-gem 'puma', '~> 3.11'
+gem 'puma', '~> 3.12'
 
 gem 'rack-cors'
 gem 'shopify_api'
